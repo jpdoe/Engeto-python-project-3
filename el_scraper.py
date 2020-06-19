@@ -4,14 +4,13 @@
 # Author: Jan Polák
 
 import requests
+
 from bs4 import BeautifulSoup
-import pprint
+
 BASE_URL = "https://volby.cz/pls/ps2017nss/"
 
 URL = "https://volby.cz/pls/ps2017nss/ps32?xjazyk=CZ&xkraj=2&xnumnuts=2102"
-# print(soup.text)
-# table = soup.find_all("div", )
-# print(soup.div.div.div.contents)
+
 
 class Municipality():
     def __init__(self):
@@ -23,10 +22,20 @@ class Municipality():
         self.parties = {}
 
     def __repr__(self):
-        return f"Code {self.code} - Name {self.name} - Registered {self.registered}"
+        return f"Code {self.code}\n" \
+               f"Name {self.name}\n" \
+               f"Registered {repr(self.registered)}\n" \
+               f"Envelopes {self.envelopes}\n" \
+               f"Votes {self.valid_votes}\n" \
+               f"Parties {self.parties}\n"
+
+    def csv_output(self):
+        return {"code": self.code, "name": self.name, "registered": self.registered, "envelopes": self.envelopes,
+                "valid": self.valid_votes, "parties": self.parties}
 
 
 municip_list = []
+
 
 # extract table from page
 
@@ -40,16 +49,18 @@ def get_soup(URL):
 
     return BeautifulSoup(page.text, 'html.parser')
 
-def get_info(URL):
 
+def norm_int(string):
+    # replace unicode non-breakable space
+    return int(string.replace(u'\xa0', u''))
+
+
+def get_info(URL, muni):
     soup = get_soup(URL)
-
-    voters = soup.find("td", {"headers": "sa2"}).text
-    envelopes = soup.find("td", {"headers": "sa3"}).text
-    valid_votes = soup.find("td", {"headers": "sa6"}).text
-    # print(soup.find("td", {"headers": "sa1 sb1"}).text)
-
-    # print(f"Voliči {voters}")
+    parties_dic = {}
+    muni.registered = norm_int(soup.find("td", {"headers": "sa2"}).text)
+    muni.envelopes = norm_int(soup.find("td", {"headers": "sa3"}).text)
+    muni.valid_votes = norm_int(soup.find("td", {"headers": "sa6"}).text)
 
     # parties table
     tables = soup.find_all("table", {"class": "table"})[1:]
@@ -59,33 +70,23 @@ def get_info(URL):
         parties = table.find_all("tr")[2:]
 
         for party in parties:
-            # skip empty (hidden) rows
-            # if party.find("td", {"class": "hidden_td"}):
-            #     print("HIDDEN")
-            #     print(party)
-            #     continue
             p_name = party.td.findNext('td').text
-            p_votes = party.td.findNext('td').findNext('td').text
-            print(p_name, p_votes)
 
+            p_votes = norm_int(party.td.findNext('td').findNext('td').text)
+            print(p_name, repr(p_votes))
 
+            muni.parties[p_name] = p_votes
 
-get_info("https://volby.cz/pls/ps2017nss/ps311?xjazyk=CZ&xkraj=2&xobec=534421&xvyber=2102")
-
-
+    return parties_dic
 
 
 def get_table(URL):
-
     soup = get_soup(URL)
 
-    # div = soup.find_all('table', attrs={'class':'table'})
 
     tables = soup.find_all("table", {"class": "table"})
 
     for table in tables:
-
-        print(10*"-")
 
         # extract table rows and remove header
         municipalities = table.find_all("tr")[2:]
@@ -98,9 +99,6 @@ def get_table(URL):
                 continue
 
             mun_tmp = Municipality()
-            # get URL
-            # print(x[0].a["href"])
-            # print(x[0].find('a')["href"])
 
             try:
                 print(muni.find('a')["href"])
@@ -112,23 +110,16 @@ def get_table(URL):
 
             mun_tmp.code = muni.find('a').text
             # get name
-            # print(f"Sibling - obec {x[0].a.findNext('td').text}")
-            # print(f"Selektor CSS - obec {x[0].select('td:nth-child(2)')[0].text}")
             mun_tmp.name = muni.a.findNext('td').text
 
-            # DELETE
-            # try:
-            #     print(f'Alt {single_muni.find("td", {"headers": "t3sa1 t3sb2"}).text}')
-            # except AttributeError:
-            #     print("FUU")
-            #     print(single_muni)
+            get_info(municip_url, mun_tmp)
 
-
-            print(mun_tmp.name)
-            print(10 * "-")
             municip_list.append(mun_tmp)
 
-    print(municip_list)
+    return municip_list
 
 
-# get_table(URL)
+zzz = get_table("https://volby.cz/pls/ps2017nss/ps31?xjazyk=CZ&xkraj=2&xnumnuts=2106")
+
+for item in zzz:
+    print(item)
