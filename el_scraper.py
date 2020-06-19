@@ -119,7 +119,8 @@ def get_table(URL):
     return municip_list
 
 
-zzz = get_table("https://volby.cz/pls/ps2017nss/ps31?xjazyk=CZ&xkraj=2&xnumnuts=2106")
+# zzz = get_table("https://volby.cz/pls/ps2017nss/ps31?xjazyk=CZ&xkraj=2&xnumnuts=2106")
+zzz = get_table("https://volby.cz/pls/ps2017nss/ps32?xjazyk=CZ&xkraj=14&xnumnuts=8102")
 
 for item in zzz:
-    print(item)
+    print(item.csv_output())
