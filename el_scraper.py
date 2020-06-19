@@ -12,27 +12,6 @@ BASE_URL = "https://volby.cz/pls/ps2017nss/"
 URL = "https://volby.cz/pls/ps2017nss/ps32?xjazyk=CZ&xkraj=2&xnumnuts=2102"
 
 
-class Municipality():
-    def __init__(self):
-        self.code = 0
-        self.name = ""
-        self.registered = 0
-        self.envelopes = 0
-        self.valid_votes = 0
-        self.parties = {}
-
-    def __repr__(self):
-        return f"Code {self.code}\n" \
-               f"Name {self.name}\n" \
-               f"Registered {repr(self.registered)}\n" \
-               f"Envelopes {self.envelopes}\n" \
-               f"Votes {self.valid_votes}\n" \
-               f"Parties {self.parties}\n"
-
-    def csv_output(self):
-        return {"code": self.code, "name": self.name, "registered": self.registered, "envelopes": self.envelopes,
-                "valid": self.valid_votes, "parties": self.parties}
-
 
 municip_list = []
 
