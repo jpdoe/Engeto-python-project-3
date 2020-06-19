@@ -4,7 +4,7 @@
 # Author: Jan Polák
 
 import requests
-
+import csv_writter
 from bs4 import BeautifulSoup
 
 BASE_URL = "https://volby.cz/pls/ps2017nss/"
@@ -58,9 +58,9 @@ def norm_int(string):
 def get_info(URL, muni):
     soup = get_soup(URL)
     parties_dic = {}
-    muni.registered = norm_int(soup.find("td", {"headers": "sa2"}).text)
-    muni.envelopes = norm_int(soup.find("td", {"headers": "sa3"}).text)
-    muni.valid_votes = norm_int(soup.find("td", {"headers": "sa6"}).text)
+    muni["registered"] = norm_int(soup.find("td", {"headers": "sa2"}).text)
+    muni["envelopes"] = norm_int(soup.find("td", {"headers": "sa3"}).text)
+    muni["valid"] = norm_int(soup.find("td", {"headers": "sa6"}).text)
 
     # parties table
     tables = soup.find_all("table", {"class": "table"})[1:]
@@ -75,9 +75,9 @@ def get_info(URL, muni):
             p_votes = norm_int(party.td.findNext('td').findNext('td').text)
             print(p_name, repr(p_votes))
 
-            muni.parties[p_name] = p_votes
+            muni[p_name] = p_votes
 
-    return parties_dic
+    # return parties_dic
 
 
 def get_table(URL):
@@ -98,7 +98,8 @@ def get_table(URL):
                 print("HIDDEN")
                 continue
 
-            mun_tmp = Municipality()
+            mun_tmp = {"code": "", "name": "", "registered": 0, "envelopes": 0,
+                "valid": 0}
 
             try:
                 print(muni.find('a')["href"])
@@ -108,9 +109,9 @@ def get_table(URL):
 
             municip_url = BASE_URL + muni.find('a')["href"]
 
-            mun_tmp.code = muni.find('a').text
+            mun_tmp["code"] = muni.find('a').text
             # get name
-            mun_tmp.name = muni.a.findNext('td').text
+            mun_tmp["name"] = muni.a.findNext('td').text
 
             get_info(municip_url, mun_tmp)
 
@@ -119,8 +120,11 @@ def get_table(URL):
     return municip_list
 
 
-# zzz = get_table("https://volby.cz/pls/ps2017nss/ps31?xjazyk=CZ&xkraj=2&xnumnuts=2106")
-zzz = get_table("https://volby.cz/pls/ps2017nss/ps32?xjazyk=CZ&xkraj=14&xnumnuts=8102")
+zzz = get_table("https://volby.cz/pls/ps2017nss/ps32?xjazyk=CZ&xkraj=8&xnumnuts=5201")
+# zzz = get_table("https://volby.cz/pls/ps2017nss/ps32?xjazyk=CZ&xkraj=14&xnumnuts=8102")
+#
+# for item in zzz:
+#     print(item.keys())
+print(zzz)
 
-for item in zzz:
-    print(item.csv_output())
+csv_writter.write_csv("bla.csv", zzz)
