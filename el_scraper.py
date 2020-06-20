@@ -4,106 +4,108 @@
 # Author: Jan Polák
 
 import requests
-import csv_writter
+import sys
 from bs4 import BeautifulSoup
+
+import csv_writter
 
 BASE_URL = "https://volby.cz/pls/ps2017nss/"
 
-URL = "https://volby.cz/pls/ps2017nss/ps32?xjazyk=CZ&xkraj=2&xnumnuts=2102"
-
+# TODO add parameters check
+URL = sys.argv[1]
+CSV_FILE = sys.argv[2]
 
 
 municip_list = []
 
 
-# extract table from page
+def get_soup(url):
+    try:
+        page = requests.get(url)
+        return BeautifulSoup(page.text, "html.parser")
 
-# table = soup.find("div", {"id": "content"})
-
-# for cil in table:
-#     print(cil)
-
-def get_soup(URL):
-    page = requests.get(URL)
-
-    return BeautifulSoup(page.text, 'html.parser')
+    except requests.exceptions.ConnectionError as e:
+        sys.exit(f"Problem with connection: {e}")
 
 
 def norm_int(string):
+
     # replace unicode non-breakable space
-    return int(string.replace(u'\xa0', u''))
+    try:
+        return int(string.replace("\xa0", ""))
+    except ValueError as e:
+        sys.exit(f"Problem with value: {e}")
 
 
-def get_info(URL, muni):
-    soup = get_soup(URL)
-    parties_dic = {}
+def get_municip_info(url, muni):
+    # prepare alphabet soup
+    soup = get_soup(url)
+
     muni["registered"] = norm_int(soup.find("td", {"headers": "sa2"}).text)
     muni["envelopes"] = norm_int(soup.find("td", {"headers": "sa3"}).text)
     muni["valid"] = norm_int(soup.find("td", {"headers": "sa6"}).text)
 
     # parties table
     tables = soup.find_all("table", {"class": "table"})[1:]
-    # print(tables)
 
     for table in tables:
+
+        # extract table rows and remove header
         parties = table.find_all("tr")[2:]
 
         for party in parties:
-            p_name = party.td.findNext('td').text
+            party_name = party.td.findNext("td").text
 
-            p_votes = norm_int(party.td.findNext('td').findNext('td').text)
-            print(p_name, repr(p_votes))
+            # skip empty row
+            if party_name == "-":
+                continue
+            # get number of votes for party
+            muni[party_name] = norm_int(party.td.findNext("td").findNext("td").text)
 
-            muni[p_name] = p_votes
 
-    # return parties_dic
-
-
-def get_table(URL):
-    soup = get_soup(URL)
-
+def get_data(url):
+    soup = get_soup(url)
 
     tables = soup.find_all("table", {"class": "table"})
 
     for table in tables:
 
         # extract table rows and remove header
-        municipalities = table.find_all("tr")[2:]
+        municip_rows = table.find_all("tr")[2:]
 
-        for muni in municipalities:
+        for row in municip_rows:
 
-            # skip empty (hidden) rows
-            if muni.find("td", {"class": "hidden_td"}):
-                print("HIDDEN")
+            # skip empty rows
+            if row.find("td").text == "-":
                 continue
 
-            mun_tmp = {"code": "", "name": "", "registered": 0, "envelopes": 0,
-                "valid": 0}
+            mun_tmp = {
+                "code": "",
+                "name": "",
+                "registered": 0,
+                "envelopes": 0,
+                "valid": 0,
+            }
 
-            try:
-                print(muni.find('a')["href"])
+            municip_url = BASE_URL + row.find("a")["href"]
 
-            except TypeError:
-                print(f"MUNI {muni}")
+            # get code & name
+            mun_tmp["code"] = row.find("a").text
+            mun_tmp["name"] = row.a.findNext("td").text
 
-            municip_url = BASE_URL + muni.find('a')["href"]
-
-            mun_tmp["code"] = muni.find('a').text
-            # get name
-            mun_tmp["name"] = muni.a.findNext('td').text
-
-            get_info(municip_url, mun_tmp)
+            # get municipality info
+            get_municip_info(municip_url, mun_tmp)
 
             municip_list.append(mun_tmp)
 
     return municip_list
 
 
-zzz = get_table("https://volby.cz/pls/ps2017nss/ps32?xjazyk=CZ&xkraj=8&xnumnuts=5201")
-# zzz = get_table("https://volby.cz/pls/ps2017nss/ps32?xjazyk=CZ&xkraj=14&xnumnuts=8102")
-#
-# for item in zzz:
-#     print(item.keys())
-print(zzz)
 
-csv_writter.write_csv("bla.csv", zzz)
+if __name__ == '__main__':
+
+    data = get_data(URL)
+
+    print(data)
+
+    csv_writter.write_csv(CSV_FILE, data)
