@@ -12,9 +12,19 @@ import csv_writter
 BASE_URL = "https://volby.cz/pls/ps2017nss/"
 
 # TODO add parameters check
-URL = sys.argv[1]
-CSV_FILE = sys.argv[2]
 
+if len(sys.argv) == 3:
+    try:
+        URL = str(sys.argv[1])
+        CSV_FILE = str(sys.argv[2])
+
+        if BASE_URL not in URL:
+            sys.exit("Wrong URL for scraping")
+
+    except ValueError:
+        sys.exit("Wrong type of arguments")
+else:
+    sys.exit("Wrong number of arguments")
 
 municip_list = []
 
@@ -105,7 +115,4 @@ def get_data(url):
 if __name__ == '__main__':
 
     data = get_data(URL)
-
-    print(data)
-
     csv_writter.write_csv(CSV_FILE, data)
