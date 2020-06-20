@@ -9,22 +9,25 @@ from bs4 import BeautifulSoup
 
 import csv_writter
 
-BASE_URL = "https://volby.cz/pls/ps2017nss/"
 
-# TODO add parameters check
+def check_args(base_url, argv):
 
-if len(sys.argv) == 3:
-    try:
-        URL = str(sys.argv[1])
-        CSV_FILE = str(sys.argv[2])
+    if len(argv) == 3:
 
-        if BASE_URL not in URL:
-            sys.exit("Wrong URL for scraping")
+        try:
+            url = str(argv[1])
+            csv_file = str(argv[2])
 
-    except ValueError:
-        sys.exit("Wrong type of arguments")
-else:
-    sys.exit("Wrong number of arguments")
+            if base_url not in url:
+                sys.exit("Wrong URL for scraping")
+            else:
+                return url, csv_file
+
+        except ValueError:
+            sys.exit("Wrong type of arguments")
+    else:
+        sys.exit("Wrong number of arguments")
+
 
 municip_list = []
 
@@ -113,5 +116,8 @@ def get_data(url):
 
 if __name__ == "__main__":
 
+    BASE_URL = "https://volby.cz/pls/ps2017nss/"
+    URL, CSV_FILE = check_args(BASE_URL, sys.argv)
     data = get_data(URL)
     csv_writter.write_csv(CSV_FILE, data)
+    print(f"Scraping is done. Output is in {CSV_FILE}.csv")
