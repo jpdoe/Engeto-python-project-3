@@ -33,6 +33,7 @@ municip_list = []
 
 
 def get_soup(url):
+
     try:
         page = requests.get(url)
         return BeautifulSoup(page.text, "html.parser")
@@ -51,6 +52,7 @@ def norm_int(string):
 
 
 def get_municip_info(url, muni):
+
     # prepare alphabet soup
     soup = get_soup(url)
 
@@ -77,6 +79,7 @@ def get_municip_info(url, muni):
 
 
 def get_data(url):
+
     soup = get_soup(url)
 
     tables = soup.find_all("table", {"class": "table"})
