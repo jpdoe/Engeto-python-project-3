@@ -111,8 +111,7 @@ def get_data(url):
     return municip_list
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     data = get_data(URL)
     csv_writter.write_csv(CSV_FILE, data)

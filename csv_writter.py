@@ -1,6 +1,7 @@
 import csv
 import sys
 
+
 def write_csv(file, data):
     with open(file + ".csv", "w", newline="") as csv_file:
 
