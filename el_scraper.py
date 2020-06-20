@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 import csv_writter
 
 
-def check_args(base_url, argv):
+def check_args(bad_urls, base_url, argv):
 
     if len(argv) == 3:
 
@@ -18,7 +18,7 @@ def check_args(base_url, argv):
             url = str(argv[1])
             csv_file = str(argv[2])
 
-            if base_url not in url:
+            if (base_url not in url) or url in bad_urls:
                 sys.exit("Wrong URL for scraping")
             else:
                 return url, csv_file
@@ -116,8 +116,10 @@ def get_data(url):
 
 if __name__ == "__main__":
 
+    # foreign voting places and main page
+    BAD_URLS = ["https://volby.cz/pls/ps2017nss/ps36?xjazyk=CZ", "https://volby.cz/pls/ps2017nss/ps3?xjazyk=CZ"]
     BASE_URL = "https://volby.cz/pls/ps2017nss/"
-    URL, CSV_FILE = check_args(BASE_URL, sys.argv)
+    URL, CSV_FILE = check_args(BAD_URLS, BASE_URL, sys.argv)
     data = get_data(URL)
     csv_writter.write_csv(CSV_FILE, data)
     print(f"Scraping is done. Output is in {CSV_FILE}.csv")
