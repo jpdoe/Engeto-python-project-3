@@ -117,7 +117,10 @@ def get_data(url):
 if __name__ == "__main__":
 
     # foreign voting places and main page
-    BAD_URLS = ["https://volby.cz/pls/ps2017nss/ps36?xjazyk=CZ", "https://volby.cz/pls/ps2017nss/ps3?xjazyk=CZ"]
+    BAD_URLS = [
+        "https://volby.cz/pls/ps2017nss/ps36?xjazyk=CZ",
+        "https://volby.cz/pls/ps2017nss/ps3?xjazyk=CZ",
+    ]
     BASE_URL = "https://volby.cz/pls/ps2017nss/"
     URL, CSV_FILE = check_args(BAD_URLS, BASE_URL, sys.argv)
     data = get_data(URL)
