@@ -4,9 +4,9 @@
 Description: Project 3 - Elections Scraper for Engeto Online Python Academy
 Author: Jan Polák
 """
+import sys
 
 import requests
-import sys
 from bs4 import BeautifulSoup
 
 import csv_writter
