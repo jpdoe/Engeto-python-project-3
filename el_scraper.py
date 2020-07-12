@@ -29,7 +29,7 @@ def check_args(bad_urls, base_url, argv):
         sys.exit("Wrong number of arguments")
 
 
-municip_list = []
+
 
 
 def get_soup(url):
@@ -79,6 +79,7 @@ def get_municip_info(url, muni):
 
 
 def get_data(url):
+    municip_list = []
 
     soup = get_soup(url)
 
