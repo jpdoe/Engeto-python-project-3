@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
-# Description: Project 3 - Elections Scraper for Engeto Online Python Academy
-# Author: Jan Polák
+"""
+Description: Project 3 - Elections Scraper for Engeto Online Python Academy
+Author: Jan Polák
+"""
 
 import requests
 import sys
